@@ -3,29 +3,23 @@ advent_of_code::solution!(1);
 #[derive(Debug)]
 enum Day1Err {
     NoCharacters,
-    ParseErr
+    ParseErr,
 }
 
 fn take_digits(s: &str) -> Result<u32, Day1Err> {
-    let line_digits: Vec<char> = String::from(s).chars()
-        .map(|c| match c {
-            '0'..='9' => Some(c),
-            _ => None
-        })
-        .filter(|o| o.is_some())
-        .map(|o| o.unwrap())
+    let line_digits: Vec<char> = String::from(s)
+        .chars()
+        .filter(|c| c.is_ascii_digit())
         .collect();
-    let first = line_digits.first().ok_or_else(|| Day1Err::NoCharacters)?;
-    let last = line_digits.last().ok_or_else(|| Day1Err::NoCharacters)?;
+    let first = line_digits.first().ok_or(Day1Err::NoCharacters)?;
+    let last = line_digits.last().ok_or(Day1Err::NoCharacters)?;
     let chars = vec![first, last];
     let final_str: String = chars.into_iter().collect();
     final_str.parse::<u32>().map_err(|_| Day1Err::ParseErr)
 }
 
 fn process(input: &str) -> u32 {
-    input.lines()
-        .map(|l| take_digits(l).unwrap())
-        .sum()
+    input.lines().map(|l| take_digits(l).unwrap()).sum()
 }
 
 fn take_digits_with_spelled_nums(s: &str) -> Result<u32, Day1Err> {
@@ -43,7 +37,8 @@ fn take_digits_with_spelled_nums(s: &str) -> Result<u32, Day1Err> {
 }
 
 fn process_p2(input: &str) -> u32 {
-    input.lines()
+    input
+        .lines()
         .map(|l| take_digits_with_spelled_nums(l).unwrap())
         .sum()
 }
