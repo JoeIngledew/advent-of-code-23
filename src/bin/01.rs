@@ -9,7 +9,7 @@ enum Day1Err {
 fn take_digits(s: &str) -> Result<u32, Day1Err> {
     let line_digits: Vec<char> = String::from(s)
         .chars()
-        .filter(|c| c.is_ascii_digit())
+        .filter(char::is_ascii_digit)
         .collect();
     let first = line_digits.first().ok_or(Day1Err::NoCharacters)?;
     let last = line_digits.last().ok_or(Day1Err::NoCharacters)?;
