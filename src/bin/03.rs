@@ -117,7 +117,9 @@ pub fn part_one(input: &str) -> Option<u32> {
         .filter_map(|c| match c.val {
             LineCellVal::Empty => None,
             LineCellVal::Symbol(_) => None,
-            LineCellVal::Number(n) => has_adj_symbol(c.row, c.cols.clone(), &all_cells).then_some(n),
+            LineCellVal::Number(n) => {
+                has_adj_symbol(c.row, c.cols.clone(), &all_cells).then_some(n)
+            }
         })
         .sum();
     Some(nums)
