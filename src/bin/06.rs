@@ -9,16 +9,23 @@ impl RResult {
     fn get_possibilities(&self) -> Vec<u64> {
         // 0..n..x, where n * (x-n) > d
         (1..self.time)
-            .filter(|x| *x * (self.time - x) > self.distance).collect()
+            .filter(|x| *x * (self.time - x) > self.distance)
+            .collect()
     }
 }
 
 fn parse_input_2(input: &str) -> RResult {
-    let nums: Vec<u64> = input.lines().map(|l| {
-        let nums: String = l.replace(|c: char| !c.is_numeric(), "");
-        nums.parse::<u64>().unwrap()
-    }).collect();
-    RResult { time: nums[0], distance: nums[1] }
+    let nums: Vec<u64> = input
+        .lines()
+        .map(|l| {
+            let nums: String = l.replace(|c: char| !c.is_numeric(), "");
+            nums.parse::<u64>().unwrap()
+        })
+        .collect();
+    RResult {
+        time: nums[0],
+        distance: nums[1],
+    }
 }
 
 fn parse_input(input: &str) -> Vec<RResult> {
@@ -37,16 +44,22 @@ fn parse_input(input: &str) -> Vec<RResult> {
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let res = parse_input(input)
-            .iter()
-            .map(|x| x.get_possibilities().len())
-            .fold(1, |acc, curr| acc * curr);
+    let res: usize = parse_input(input)
+        .iter()
+        .map(|x| x.get_possibilities().len())
+        .product();
     Some(res.try_into().unwrap())
 }
 
 // this is a bit slow
 pub fn part_two(input: &str) -> Option<u64> {
-    Some(parse_input_2(input).get_possibilities().len().try_into().unwrap())
+    Some(
+        parse_input_2(input)
+            .get_possibilities()
+            .len()
+            .try_into()
+            .unwrap(),
+    )
 }
 
 #[cfg(test)]
