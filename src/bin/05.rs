@@ -1,6 +1,163 @@
-use std::str::FromStr;
+use std::{collections::BTreeSet, str::FromStr};
 
 advent_of_code::solution!(5);
+
+// PART 2 CODE - https://gist.github.com/shaansheikh/bbda4b79a0fe5a32a484f66fb6cd0cd4
+struct Day5Err;
+
+struct Interval {
+    start: i64,
+    end: i64,
+    offset: i64,
+}
+
+impl FromStr for Interval {
+    type Err = Day5Err;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut nums = s.split(' ').map(|x| x.parse::<i64>());
+        let dest = nums.next().unwrap().map_err(|_| Day5Err)?;
+        let start = nums.next().unwrap().map_err(|_| Day5Err)?;
+        let len = nums.next().unwrap().map_err(|_| Day5Err)?;
+        let end = start + len - 1;
+        let offset = dest - start;
+        Ok(Interval { end, start, offset })
+    }
+}
+
+impl Interval {
+    fn new(start: i64, len: i64) -> Self {
+        Interval {
+            start,
+            end: start + len + 1,
+            offset: 0,
+        }
+    }
+
+    fn contains(&self, point: i64) -> bool {
+        self.start <= point && point <= self.end
+    }
+
+    fn map(&self, point: i64) -> i64 {
+        point + self.offset
+    }
+
+    fn outputs(&self, mapped_point: i64) -> bool {
+        self.start + self.offset <= mapped_point && mapped_point <= self.end + self.offset
+    }
+
+    fn undo_map(&self, mapped_point: i64) -> i64 {
+        mapped_point - self.offset
+    }
+}
+
+struct IntervalList(Vec<Interval>);
+
+impl IntervalList {
+    fn process(&self, point: i64) -> i64 {
+        for i in &self.0 {
+            if i.contains(point) {
+                return i.map(point);
+            }
+        }
+        point
+    }
+
+    fn undo_proc(&self, outputs: &mut BTreeSet<i64>) -> BTreeSet<i64> {
+        let mut potentials: BTreeSet<i64> = BTreeSet::new();
+        for i in &self.0 {
+            for o in outputs.iter() {
+                if i.outputs(*o) {
+                    potentials.insert(i.undo_map(*o));
+                }
+            }
+        }
+        outputs.append(&mut potentials);
+        outputs.to_owned()
+    }
+
+    fn filter(&self, points: BTreeSet<i64>) -> BTreeSet<i64> {
+        let mut res: BTreeSet<i64> = BTreeSet::new();
+        for p in points.iter() {
+            if self.0.iter().any(|i| i.contains(*p)) {
+                res.insert(*p);
+            }
+        }
+        res
+    }
+
+    fn boundaries(&self, candidate_points: &mut BTreeSet<i64>) -> BTreeSet<i64> {
+        for i in self.0.iter() {
+            candidate_points.insert(i.start);
+            candidate_points.insert(i.end);
+        }
+        candidate_points.to_owned()
+    }
+}
+
+fn parse(input: &str) -> (IntervalList, Vec<IntervalList>) {
+    let mut lines = input.lines();
+    let seeds_line = lines.next().unwrap();
+    let seeds_unparsed: Vec<i64> = seeds_line.split_once(": ").map_or(vec![], |l| {
+        l.1.split(char::is_whitespace)
+            .filter_map(|x| match x {
+                "" => None,
+                s => s.parse::<i64>().ok(),
+            })
+            .collect()
+    });
+    let seeds_intervals: Vec<Interval> = seeds_unparsed
+        .chunks(2)
+        .map(|chunk| {
+            let start = *chunk.first().unwrap();
+            let range = *chunk.last().unwrap();
+            Interval::new(start, range)
+        })
+        .collect::<Vec<Interval>>();
+    let seeds_intervals = IntervalList(seeds_intervals);
+
+    let mut curr: Vec<Interval> = Vec::new();
+    let mut int_lists: Vec<IntervalList> = Vec::new();
+    for l in lines {
+        if l.is_empty() {
+            if !curr.is_empty() {
+                int_lists.push(IntervalList(curr));
+            }
+            curr = Vec::new();
+        } else if let Ok(i) = l.parse::<Interval>() {
+            curr.push(i);
+        }
+    }
+
+    (seeds_intervals, int_lists)
+}
+
+fn do_part_two(input: &str) -> i64 {
+    let (seed_ints, mut ivs) = parse(input);
+    let mut candidate_set: BTreeSet<i64> = BTreeSet::new();
+    ivs.reverse();
+    for i in &ivs {
+        candidate_set = i.undo_proc(&mut candidate_set);
+        candidate_set = i.boundaries(&mut candidate_set);
+    }
+
+    candidate_set = seed_ints.filter(candidate_set);
+
+    let mut curr = i64::MAX;
+
+    ivs.reverse();
+    for s in candidate_set.iter() {
+        let mut temp = *s;
+        for i in ivs.iter() {
+            temp = i.process(temp);
+        }
+        if temp < curr {
+            curr = temp
+        }
+    }
+    curr
+}
+
+// END PART 2 CODE
 
 #[derive(Eq, PartialEq, Debug, Clone, Copy, PartialOrd, Ord)]
 enum MapType {
@@ -296,8 +453,9 @@ pub fn part_one(input: &str) -> Option<u64> {
     final_locations.first().copied()
 }
 
-pub fn part_two(_: &str) -> Option<u64> {
-    None
+pub fn part_two(input: &str) -> Option<i64> {
+    let res = do_part_two(input);
+    Some(res)
 }
 
 #[cfg(test)]
@@ -311,11 +469,11 @@ mod tests {
     }
 
     // i don't get it
-    // #[test]
-    // fn test_part_two() {
-    //     let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-    //     assert_eq!(result, Some(46));
-    // }
+    #[test]
+    fn test_part_two() {
+        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
+        assert_eq!(result, Some(46));
+    }
 
     #[test]
     fn test_smap_basic() {
