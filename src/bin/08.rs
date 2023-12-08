@@ -1,5 +1,8 @@
-use std::{collections::{HashMap, BTreeMap}, hash::Hash};
 use rayon::prelude::*;
+use std::{
+    collections::{BTreeMap, HashMap},
+    hash::Hash,
+};
 
 advent_of_code::solution!(8);
 
@@ -20,12 +23,12 @@ fn char_to_dir(c: char) -> Option<Direction> {
 struct NodeKey {
     key: String,
     is_start: bool,
-    is_end: bool
+    is_end: bool,
 }
 
 impl PartialEq for NodeKey {
     fn eq(&self, other: &Self) -> bool {
-        &self.key == &other.key
+        self.key == other.key
     }
 }
 
@@ -35,8 +38,9 @@ impl Hash for NodeKey {
     }
 
     fn hash_slice<H: std::hash::Hasher>(data: &[Self], state: &mut H)
-        where
-            Self: Sized, {
+    where
+        Self: Sized,
+    {
         data.hash(state);
     }
 }
@@ -56,7 +60,14 @@ impl Puzzle {
         while curr_node != &String::from("ZZZ") {
             steps += 1;
             let next_dir = &self.instructions[dir_cursor];
-            let choices = self.nodes.get(&NodeKey { key: curr_node.to_string(), is_start: false, is_end: false }).unwrap();
+            let choices = self
+                .nodes
+                .get(&NodeKey {
+                    key: curr_node.to_string(),
+                    is_start: false,
+                    is_end: false,
+                })
+                .unwrap();
             match next_dir {
                 Direction::Left => curr_node = &choices.0,
                 Direction::Right => curr_node = &choices.1,
@@ -76,25 +87,28 @@ impl Puzzle {
             let k = x.0;
             key_index.insert(k.key.to_string(), k);
         }
-        let steps_iter: Vec<usize> = start_keys.par_iter().map(|k| {
-            let mut dir_cursor = 0;
-            let mut steps: u64 = 0;
-            let mut curr_node = k;
-            while !curr_node.is_end {
-                steps += 1;
-                let next_dir = &self.instructions[dir_cursor];
-                let choices = self.nodes.get(curr_node).unwrap();
-                match next_dir {
-                    Direction::Left => curr_node = key_index.get(&choices.0).unwrap(),
-                    Direction::Right => curr_node = key_index.get(&choices.1).unwrap(),
+        let steps_iter: Vec<usize> = start_keys
+            .par_iter()
+            .map(|k| {
+                let mut dir_cursor = 0;
+                let mut steps: u64 = 0;
+                let mut curr_node = k;
+                while !curr_node.is_end {
+                    steps += 1;
+                    let next_dir = &self.instructions[dir_cursor];
+                    let choices = self.nodes.get(curr_node).unwrap();
+                    match next_dir {
+                        Direction::Left => curr_node = key_index.get(&choices.0).unwrap(),
+                        Direction::Right => curr_node = key_index.get(&choices.1).unwrap(),
+                    }
+                    dir_cursor += 1;
+                    if dir_cursor == self.instructions.len() {
+                        dir_cursor = 0;
+                    }
                 }
-                dir_cursor += 1;
-                if dir_cursor == self.instructions.len() {
-                    dir_cursor = 0;
-                }
-            }
-            steps as usize
-        }).collect();
+                steps as usize
+            })
+            .collect();
         lcm(&steps_iter)
     }
 }
@@ -140,7 +154,14 @@ fn parse_input(input: &str) -> Puzzle {
             let r = split[2].as_str();
             let is_start = key.ends_with('A');
             let is_end = key.ends_with('Z');
-            nodes.insert(NodeKey { key: String::from(key), is_start, is_end }, (String::from(l), String::from(r)));
+            nodes.insert(
+                NodeKey {
+                    key: String::from(key),
+                    is_start,
+                    is_end,
+                },
+                (String::from(l), String::from(r)),
+            );
         }
     }
 
@@ -174,23 +195,41 @@ mod tests {
 
     #[test]
     fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file_part("examples", DAY, 2));
+        let result = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 2,
+        ));
         assert_eq!(result, Some(6));
     }
 
     #[test]
     fn compare_nodes() {
-        let a = NodeKey { is_end: false, is_start: true, key: String::from("AAA") };
+        let a = NodeKey {
+            is_end: false,
+            is_start: true,
+            key: String::from("AAA"),
+        };
         let b_key: &String = &"AAA".to_string();
-        let b = NodeKey { is_end: true, is_start: false, key: b_key.to_string() };
+        let b = NodeKey {
+            is_end: true,
+            is_start: false,
+            key: b_key.to_string(),
+        };
         assert!(a.eq(&b));
     }
 
     #[test]
     fn map_test() {
-        let a = NodeKey { is_end: false, is_start: true, key: String::from("AAA") };
+        let a = NodeKey {
+            is_end: false,
+            is_start: true,
+            key: String::from("AAA"),
+        };
         let b_key: &String = &"AAA".to_string();
-        let b = NodeKey { is_end: true, is_start: false, key: b_key.to_string() };
+        let b = NodeKey {
+            is_end: true,
+            is_start: false,
+            key: b_key.to_string(),
+        };
         let mut map: HashMap<NodeKey, u8> = HashMap::new();
         map.insert(a, 1);
         let entry = map.get(&b);
