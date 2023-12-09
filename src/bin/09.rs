@@ -18,7 +18,7 @@ fn get_next_in_seq(seq: Vec<i64>) -> i64 {
     }
     match unique(&diffs) {
         Some(x) => seq.last().unwrap() + x,
-        None => seq.last().unwrap() + get_next_in_seq(diffs)
+        None => seq.last().unwrap() + get_next_in_seq(diffs),
     }
 }
 
@@ -30,21 +30,23 @@ fn get_next_in_seq_back(seq: Vec<i64>) -> i64 {
     }
     match unique(&diffs) {
         Some(x) => seq.first().unwrap() - x,
-        None => seq.first().unwrap() - get_next_in_seq_back(diffs)
+        None => seq.first().unwrap() - get_next_in_seq_back(diffs),
     }
 }
 
 pub fn part_one(input: &str) -> Option<i64> {
-    let res = input.lines().map(|l| {
-        get_next_in_seq(l.split(' ').map(|s| s.parse::<i64>().unwrap()).collect())
-    }).sum();
+    let res = input
+        .lines()
+        .map(|l| get_next_in_seq(l.split(' ').map(|s| s.parse::<i64>().unwrap()).collect()))
+        .sum();
     Some(res)
 }
 
 pub fn part_two(input: &str) -> Option<i64> {
-    let res: Vec<i64> = input.lines().map(|l| {
-        get_next_in_seq_back(l.split(' ').map(|s| s.parse::<i64>().unwrap()).collect())
-    }).collect();
+    let res: Vec<i64> = input
+        .lines()
+        .map(|l| get_next_in_seq_back(l.split(' ').map(|s| s.parse::<i64>().unwrap()).collect()))
+        .collect();
     let res = res.iter().sum();
     Some(res)
 }
