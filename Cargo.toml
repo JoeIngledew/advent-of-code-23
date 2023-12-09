@@ -16,7 +16,9 @@ test_lib = []
 [dependencies]
 anyhow = "1.0.75"
 array_tool = "1.0.3"
+hashbrown = "0.14.3"
 itertools = "0.12.0"
 pico-args = "0.5.0"
 rayon = "1.8.0"
 regex = "1.10.2"
+tailcall = "0.1.6"
