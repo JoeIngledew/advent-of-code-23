@@ -1,3 +1,4 @@
+use advent_of_code::lcm;
 use rayon::prelude::*;
 use std::{
     collections::{BTreeMap, HashMap},
@@ -111,22 +112,6 @@ impl Puzzle {
             .collect();
         lcm(&steps_iter)
     }
-}
-
-fn lcm(nums: &[usize]) -> usize {
-    if nums.len() == 1 {
-        return nums[0];
-    }
-    let a = nums[0];
-    let b = lcm(&nums[1..]);
-    a * b / gcd_of_two_numbers(a, b)
-}
-
-fn gcd_of_two_numbers(a: usize, b: usize) -> usize {
-    if b == 0 {
-        return a;
-    }
-    gcd_of_two_numbers(b, a % b)
 }
 
 fn parse_input(input: &str) -> Puzzle {

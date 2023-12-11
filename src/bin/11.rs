@@ -1,3 +1,4 @@
+use advent_of_code::Point;
 use hashbrown::HashMap;
 use itertools::Itertools;
 
@@ -7,12 +8,6 @@ advent_of_code::solution!(11);
 enum NodeType {
     Space,
     Galaxy,
-}
-
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
-struct Point {
-    x: usize,
-    y: usize,
 }
 
 struct ParseNodeTypeError;
